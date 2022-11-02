@@ -3,8 +3,66 @@ import appPreviewImg from '../assets/app-nlw-copa-preview.png';
 import logoImg from '../assets/logo.svg';
 import usersAvatarExampleImg from '../assets/users-avatar-example.png';
 import iconCheckImg from '../assets/icon-check.svg';
+import { api } from '../lib/axios';
+import { FormEvent, useState } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 
-export default function Home() {
+interface HomeProps {
+	poolCount: number;
+	guessCount: number;
+	userCount: number;
+}
+
+export default function Home(props: HomeProps) {
+	const [poolTitle, setPoolTitle] = useState<string>('');
+	const [isCreatingPool, setIsCreatingPool] = useState<boolean>(false);
+
+	async function createPool(event: FormEvent) {
+		setIsCreatingPool(true);
+		event.preventDefault();
+
+		toast.promise(
+			api
+				.post(
+					'pools',
+					{
+						title: poolTitle,
+					},
+					{
+						timeout: 10000,
+					}
+				)
+				.then(
+					(response) =>
+						new Promise((resolve) => {
+							setTimeout(() => {
+								const { code } = response.data;
+								navigator.clipboard.writeText(code);
+								setPoolTitle('');
+								setIsCreatingPool(false);
+								resolve(code);
+							}, 1000);
+						})
+				)
+				.catch((err) => {
+					setPoolTitle('');
+					setIsCreatingPool(false);
+					throw err;
+				}),
+
+			{
+				loading: 'Criando o bolão...',
+				success:
+					'Bolão criado com sucesso, e o seu código foi copiado para a área de transferência! 👏',
+				error: 'Erro ao criar o bolão, tente novamente!',
+			},
+			{
+				className: 'toast-container',
+				duration: 5000,
+			}
+		);
+	}
+
 	return (
 		<div className='max-w-[1124px] h-screen mx-auto grid grid-cols-2 items-center gap-28'>
 			<main>
@@ -17,20 +75,23 @@ export default function Home() {
 				<div className='mt-10 flex items-center gap-2'>
 					<Image src={usersAvatarExampleImg} alt='' />
 					<strong className='text-gray-100 text-xl'>
-						<span className='text-nlw-green-500'>+12.592</span> pessoas já estão
-						usando
+						<span className='text-nlw-green-500'>+{props.userCount}</span> pessoas já
+						estão usando
 					</strong>
 				</div>
 
-				<form className='mt-10 flex items-center gap-2'>
+				<form onSubmit={createPool} className='mt-10 flex items-center gap-2'>
 					<input
 						type='text'
+						value={poolTitle}
+						onChange={(event) => setPoolTitle(event.target.value)}
 						required
 						placeholder='Qual nome do seu bolão?'
 						className='flex-1 py-4 px-6 rounded bg-gray-800 placeholder:text-gray-200 text-gray-100 border border-gray-600 text-sm'
 					/>
 					<button
 						type='submit'
+						disabled={isCreatingPool}
 						className='py-4 px-6 rounded bg-nlw-yellow-500 text-sm uppercase font-bold text-gray-900 hover:bg-nlw-yellow-700 transition-colors'>
 						Criar meu bolão
 					</button>
@@ -45,7 +106,7 @@ export default function Home() {
 					<div className='flex items-center gap-6'>
 						<Image src={iconCheckImg} alt='' />
 						<div className='flex flex-col gap-1'>
-							<span className='text-2xl font-bold'>+2.034</span>
+							<span className='text-2xl font-bold'>+{props.poolCount}</span>
 							<span>Bolões criados</span>
 						</div>
 					</div>
@@ -55,7 +116,7 @@ export default function Home() {
 					<div className='flex items-center gap-6'>
 						<Image src={iconCheckImg} alt='' />
 						<div className='flex flex-col gap-1'>
-							<span className='text-2xl font-bold'>+192.847</span>
+							<span className='text-2xl font-bold'>+{props.guessCount}</span>
 							<span>Palpites enviados</span>
 						</div>
 					</div>
@@ -66,6 +127,24 @@ export default function Home() {
 				alt='Imagem de dois celulares exibindo uma prévia da aplicação móvel do NLW Copa'
 				quality={100}
 			/>
+			<Toaster />
 		</div>
 	);
 }
+
+export const getServerSideProps = async () => {
+	const [poolCountResponse, guessCountResponse, userCountResponse] =
+		await Promise.all([
+			api.get('pools/count'),
+			api.get('guesses/count'),
+			api.get('users/count'),
+		]);
+
+	return {
+		props: {
+			poolCount: poolCountResponse.data.count,
+			guessCount: guessCountResponse.data.count,
+			userCount: userCountResponse.data.count,
+		},
+	};
+};
