@@ -15,7 +15,7 @@ async function bootstrap() {
 		origin: true,
 	});
 
-	fastify.get('/polls/count', async () => {
+	fastify.get('/pools/count', async () => {
 		const count = await prisma.poll.count();
 		return { count };
 	});
