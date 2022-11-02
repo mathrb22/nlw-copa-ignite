@@ -141,7 +141,7 @@ Entre em contato comigo por e-mail ou pelo meu LinkedIn:
 
 ## 📝 Licença
 
-<a href="https://github.com/mathrb22/nlw-copa-ignite/blob/main/LICENSE">
+<a href="https://github.com/mathrb22/nlw-copa-ignite/blob/main/LICENSE.md">
     <img alt="GitHub License" src="https://img.shields.io/github/license/mathrb22/nlw-copa-ignite">
 </a>
 
