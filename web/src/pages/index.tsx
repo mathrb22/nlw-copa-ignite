@@ -6,6 +6,7 @@ import iconCheckImg from '../assets/icon-check.svg';
 import { api } from '../lib/axios';
 import { FormEvent, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
+import { GetStaticProps } from 'next';
 
 interface HomeProps {
 	poolCount: number;
@@ -132,19 +133,19 @@ export default function Home(props: HomeProps) {
 	);
 }
 
-export const getServerSideProps = async () => {
+export const getStaticProps: GetStaticProps = async (context) => {
 	const [poolCountResponse, guessCountResponse, userCountResponse] =
 		await Promise.all([
 			api.get('pools/count'),
 			api.get('guesses/count'),
 			api.get('users/count'),
 		]);
-
 	return {
 		props: {
 			poolCount: poolCountResponse.data.count,
 			guessCount: guessCountResponse.data.count,
 			userCount: userCountResponse.data.count,
 		},
+		revalidate: 15 * 60,
 	};
 };
