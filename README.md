@@ -53,7 +53,7 @@ O projeto consiste em uma aplicação com a temática da copa, que permitirá os
 - [x] Schema validation utilizando o Zod
 - [x] Diagrama ERD (entidade-relacionamento):
 
-<img src=".github/assets/erd.svg" alt="Diagrama ERD" height="800px"/>
+<img src=".github/assets/ERD.svg" alt="Diagrama ERD" height="800px"/>
 
 ### Front-end (Web)
 
